@@ -1,7 +1,7 @@
-all : nvortex2d.bin
+all : nvortex2d.bin nvortex3d.bin
 
-nvortex2d.bin : nvortex2d.cpp
-	g++ -march=native -O2 -o nvortex2d.bin nvortex2d.cpp
+%.bin : %.cpp
+	g++ -march=native -O2 -o $@ $<
 
 clean :
-	rm -f nvortex2d.bin
+	rm -f nvortex2d.bin nvortex3d.bin

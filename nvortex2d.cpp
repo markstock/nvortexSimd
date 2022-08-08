@@ -1,3 +1,9 @@
+/*
+ * nvortexSimd - test platform for SIMD-acceleration of an N-vortex solver
+ *
+ * Copyright (c) 2022 Mark J. Stock <markjstock@gmail.com>
+*/
+
 #include <iostream>
 #include <random>
 #include <chrono>
@@ -5,15 +11,29 @@
 
 using std::experimental::native_simd;
 
+static void usage() {
+  fprintf(stderr, "Usage: nvortex2d.bin [-n=<number>]\n");
+  exit(1);
+}
+
 int main(int argc, char const *argv[]) {
 
-  std::cout << "experimental/simd test01\n";
+  size_t ntarg = 10000;
   const bool timeit = true;
+
+  if (argc > 1) {
+    if (strncmp(argv[1], "-n=", 3) == 0) {
+      int num = atof(argv[1] + 3);
+      if (num < 1) usage();
+      ntarg = num;
+    }
+  }
+
+  std::cout << "experimental/simd test01\n";
 
   constexpr std::size_t VECREG_SIZE = native_simd<float>::size();
   std::cout << "  register size is " << VECREG_SIZE << " wide\n";
 
-  const size_t ntarg = 100000;
   std::cout << "  number of particles is " << ntarg << "\n";
   const size_t nvec = 1 + (ntarg-1)/VECREG_SIZE;
   std::vector<native_simd<float>> x(nvec),y(nvec),s(nvec),r(nvec);
@@ -86,4 +106,6 @@ int main(int argc, char const *argv[]) {
     std::cout << "work complete in " << (elapsed.count()/1.e+9) << " sec\n";
     std::cout << "performance is " << (flops / elapsed.count()) << " GF/s\n";
   }
+
+  return 0;
 }

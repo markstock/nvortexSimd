@@ -93,11 +93,17 @@ int main(int argc, char const *argv[]) {
       const native_simd<float> dy = y[i][ii] - y[j];
       const native_simd<float> dz = z[i][ii] - z[j];
       const native_simd<float> dist = dx*dx + dy*dy + dz*dz + r[j]*r[j] + tr2;
-      //const native_simd<float> fac = 1.0 / (dist*sqrt(dist));
-      native_simd<float> fac;
-      for (size_t jj=0; jj<VECREG_SIZE; ++jj) {
-        fac[jj] = 1.f / (dist[jj]*std::sqrt(dist[jj]));
-      }
+
+      // correct kernel, with sqrt
+      //const native_simd<float> fac = 1.f / (dist*sqrt(dist));
+      // must serialize these calcs
+      //native_simd<float> fac;
+      //for (size_t jj=0; jj<VECREG_SIZE; ++jj) {
+      //  fac[jj] = 1.f / (dist[jj]*std::sqrt(dist[jj]));
+      //}
+
+      // wrong kernel, not a Green's function solution
+      const native_simd<float> fac = 1.f / (dist*dist);
 
       usum += fac * (dy*sz[j] - dz*sy[j]);
       vsum += fac * (dz*sx[j] - dx*sz[j]);

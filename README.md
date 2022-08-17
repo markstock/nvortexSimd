@@ -10,7 +10,6 @@ On a Linux workstation with GCC 11+ or clang (?), this should be as easy as
 ## To do
 We should be able to iterate over a `std::vector<float>` but cast it to a simd type just before the kernel.
 Template the data on float-or-double, to compare performance.
-Scale the radii and strength similar to nvortexVc and others.
 
 ## About
 This will be a copy of [nvortexVc](https://github.com/Applied-Scientific-Research/nvortexVc) but using the C++-built-in experimental simd extensions.

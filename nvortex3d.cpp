@@ -47,6 +47,9 @@ int main(int argc, char const *argv[]) {
   std::uniform_real_distribution<float> distribution(-1.f, 1.f);
   std::uniform_real_distribution<float> posdistro(0.1f, 1.f);
 
+  const float thisstrmag = 1.0 / std::sqrt(ntarg);
+  const float thisrad    = (2./3.) / std::pow(ntarg,1./3.);
+
   // initialize to random
   for (size_t i=0; i<x.size(); ++i) for (size_t j=0; j<VECREG_SIZE; ++j) {
     x[i][j] = (i*VECREG_SIZE+j < ntarg) ? distribution(generator) : 0.f;
@@ -58,16 +61,16 @@ int main(int argc, char const *argv[]) {
     z[i][j] = (i*VECREG_SIZE+j < ntarg) ? distribution(generator) : 0.f;
   }
   for (size_t i=0; i<sx.size(); ++i) for (size_t j=0; j<VECREG_SIZE; ++j) {
-    sx[i][j] = (i*VECREG_SIZE+j < ntarg) ? distribution(generator) : 0.f;
+    sx[i][j] = (i*VECREG_SIZE+j < ntarg) ? thisstrmag*distribution(generator) : 0.f;
   }
   for (size_t i=0; i<sy.size(); ++i) for (size_t j=0; j<VECREG_SIZE; ++j) {
-    sy[i][j] = (i*VECREG_SIZE+j < ntarg) ? distribution(generator) : 0.f;
+    sy[i][j] = (i*VECREG_SIZE+j < ntarg) ? thisstrmag*distribution(generator) : 0.f;
   }
   for (size_t i=0; i<sz.size(); ++i) for (size_t j=0; j<VECREG_SIZE; ++j) {
-    sz[i][j] = (i*VECREG_SIZE+j < ntarg) ? distribution(generator) : 0.f;
+    sz[i][j] = (i*VECREG_SIZE+j < ntarg) ? thisstrmag*distribution(generator) : 0.f;
   }
   for (size_t i=0; i<r.size(); ++i) for (size_t j=0; j<VECREG_SIZE; ++j) {
-    r[i][j] = (i*VECREG_SIZE+j < ntarg) ? 0.1f*posdistro(generator) : 1.f;
+    r[i][j] = (i*VECREG_SIZE+j < ntarg) ? thisrad*posdistro(generator) : 1.f;
   }
 
   auto start = std::chrono::system_clock::now();

@@ -11,6 +11,8 @@
 
 using std::experimental::native_simd;
 
+#define FLOAT float
+
 static void usage() {
   fprintf(stderr, "Usage: nvortex2d.bin [-n=<number>]\n");
   exit(1);
@@ -31,23 +33,23 @@ int main(int argc, char const *argv[]) {
 
   std::cout << "experimental/simd test01\n";
 
-  constexpr std::size_t VECREG_SIZE = native_simd<float>::size();
+  constexpr std::size_t VECREG_SIZE = native_simd<FLOAT>::size();
   std::cout << "  register size is " << VECREG_SIZE << " wide\n";
 
   std::cout << "  number of particles is " << ntarg << "\n";
   const size_t nvec = 1 + (ntarg-1)/VECREG_SIZE;
-  std::vector<native_simd<float>> x(nvec),y(nvec),s(nvec),r(nvec);
-  std::vector<native_simd<float>> u(nvec),v(nvec);
+  std::vector<native_simd<FLOAT>> x(nvec),y(nvec),s(nvec),r(nvec);
+  std::vector<native_simd<FLOAT>> u(nvec),v(nvec);
   std::cout << "  vector length is " << x.size() << " entries\n";
 
   //std::random_device rd;
   //std::mt19937 generator(rd());
   std::mt19937 generator(12345);
-  std::uniform_real_distribution<float> distribution(-1.f, 1.f);
-  std::uniform_real_distribution<float> posdistro(0.1f, 1.f);
+  std::uniform_real_distribution<FLOAT> distribution(-1.f, 1.f);
+  std::uniform_real_distribution<FLOAT> posdistro(0.1f, 1.f);
 
-  const float thisstrmag = 1.0 / std::sqrt(ntarg);
-  const float thisrad    = (2./3.) / std::sqrt(ntarg);
+  const FLOAT thisstrmag = 1.0 / std::sqrt(ntarg);
+  const FLOAT thisrad    = (2./3.) / std::sqrt(ntarg);
 
   // initialize to random
   for (size_t i=0; i<x.size(); ++i) for (size_t j=0; j<VECREG_SIZE; ++j) {
@@ -76,18 +78,18 @@ int main(int argc, char const *argv[]) {
     // same results as:
     //for (size_t ii=0; ii<VECREG_SIZE; ++ii) {
 
-    native_simd<float> usum = 0.f;
-    native_simd<float> vsum = 0.f;
-    const native_simd<float> targrad = r[i][ii];
-    const native_simd<float> tr2 = targrad*targrad;
+    native_simd<FLOAT> usum = 0.f;
+    native_simd<FLOAT> vsum = 0.f;
+    const native_simd<FLOAT> targrad = r[i][ii];
+    const native_simd<FLOAT> tr2 = targrad*targrad;
 
     // loop over sources, vector at a time
     for (size_t j=0; j<x.size(); ++j) {
 
-      const native_simd<float> dx = x[i][ii] - x[j];
-      const native_simd<float> dy = y[i][ii] - y[j];
-      const native_simd<float> dist = dx*dx + dy*dy + r[j]*r[j] + tr2;
-      const native_simd<float> fac = s[j] / dist;
+      const native_simd<FLOAT> dx = x[i][ii] - x[j];
+      const native_simd<FLOAT> dy = y[i][ii] - y[j];
+      const native_simd<FLOAT> dist = dx*dx + dy*dy + r[j]*r[j] + tr2;
+      const native_simd<FLOAT> fac = s[j] / dist;
 
       usum -= dy * fac;
       vsum += dx * fac;

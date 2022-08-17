@@ -2,14 +2,14 @@
 Simple N-body codes using C++ experimental simd support
 
 ## Compile and run
-On a Linux workstation with GCC 11+ or clang (?), this should be as easy as
+On a Linux workstation with GCC 11+ (or clang?), this should be as easy as
 
 	make
 	./nvortex2d.bin
+	./nvortex3d.bin -n=30000
 
 ## To do
 We should be able to iterate over a `std::vector<float>` but cast it to a simd type just before the kernel.
-Template the data on float-or-double, to compare performance.
 
 ## About
 This will be a copy of [nvortexVc](https://github.com/Applied-Scientific-Research/nvortexVc) but using the C++-built-in experimental simd extensions.

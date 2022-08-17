@@ -2,7 +2,7 @@
 Simple N-body codes using C++ experimental simd support
 
 ## Compile and run
-On a Linux workstation with GCC 10+, this should be as easy as
+On a Linux workstation with GCC 11+ or clang (?), this should be as easy as
 
 	make
 	./nvortex2d.bin

@@ -75,12 +75,16 @@ int main(int argc, char const *argv[]) {
     r[i][j] = (i*VECREG_SIZE+j < ntarg) ? thisrad*posdistro(generator) : 1.f;
   }
 
+  // do a smaller precursor calculation to warm things up
+  std::vector<size_t> itargs = {{x.size()/2, x.size(), x.size()}};
+
+  for (size_t thissize : itargs) {
+  std::cout << "run with " << VECREG_SIZE*thissize << " parts" << std::endl;
   auto start = std::chrono::system_clock::now();
 
-  // perform some math
-
   // loop over targets, one at a time
-  for (size_t i=0; i<x.size(); ++i) {
+  #pragma omp parallel for schedule(guided)
+  for (size_t i=0; i<thissize; ++i) {
   for (size_t ii=0; ii<std::min(VECREG_SIZE,ntarg-i*VECREG_SIZE); ++ii) {
     // same results as:
     //for (size_t ii=0; ii<VECREG_SIZE; ++ii) {
@@ -100,7 +104,7 @@ int main(int argc, char const *argv[]) {
       const native_simd<FLOAT> dist = dx*dx + dy*dy + dz*dz + r[j]*r[j] + tr2;
 
       // correct kernel, with sqrt
-      //const native_simd<FLOAT> fac = 1.f / (dist*sqrt(dist));
+      const native_simd<FLOAT> fac = 1.f / (dist*sqrt(dist));
       // must serialize these calcs
       //native_simd<FLOAT> fac;
       //for (size_t jj=0; jj<VECREG_SIZE; ++jj) {
@@ -108,7 +112,7 @@ int main(int argc, char const *argv[]) {
       //}
 
       // wrong kernel, not a Green's function solution
-      const native_simd<FLOAT> fac = 1.f / (dist*dist);
+      //const native_simd<FLOAT> fac = 1.f / (dist*dist);
 
       usum += fac * (dy*sz[j] - dz*sy[j]);
       vsum += fac * (dz*sx[j] - dx*sz[j]);
@@ -122,16 +126,18 @@ int main(int argc, char const *argv[]) {
   }
   }
 
-  const float flops = ntarg*(1+nvec*VECREG_SIZE*29);
-  std::cout << "performed " << flops << " flops\n";
+  const float flops = (thissize*VECREG_SIZE)*(1+nvec*VECREG_SIZE*29);
+  std::cout << "  performed " << flops << " flops\n";
 
   auto end = std::chrono::system_clock::now();
   auto elapsed = end - start;
 
   if (timeit) {
-    std::cout << "work complete in " << (elapsed.count()/1.e+9) << " sec\n";
-    std::cout << "performance is " << (flops / elapsed.count()) << " GF/s\n";
+    std::cout << "  work complete in " << (elapsed.count()/1.e+9) << " sec\n";
+    std::cout << "  performance is " << (flops / elapsed.count()) << " GF/s\n";
   }
+
+  } // end loop over runs
 
   return 0;
 }

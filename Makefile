@@ -1,6 +1,6 @@
 # define the compiler manually, because Cray
 CXX=g++
-ifneq (, $(shell which CC))
+ifneq (, $(shell which CC 2>/dev/null))
   CXX=CC
 endif
 

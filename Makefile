@@ -1,11 +1,13 @@
 # define the compiler manually, because Cray
-CC=g++
-#CC=CC
+CXX=g++
+ifneq (, $(shell which CC))
+  CXX=CC
+endif
 
 all : nvortex2d.bin nvortex3d.bin
 
 %.bin : %.cpp
-	$(CC) -march=native -O2 -o $@ $< -fopenmp
+	$(CXX) -march=native -O2 -o $@ $< -fopenmp
 
 clean :
 	rm -f nvortex2d.bin nvortex3d.bin

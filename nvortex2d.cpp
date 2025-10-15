@@ -31,14 +31,15 @@ int main(int argc, char const *argv[]) {
     }
   }
 
-  std::cout << "experimental/simd test01\n";
+  std::cout << "experimental/simd nvortex2d\n";
 
   constexpr std::size_t VECREG_SIZE = native_simd<FLOAT>::size();
   std::cout << "  register size is " << VECREG_SIZE << " wide\n";
 
   std::cout << "  number of particles is " << ntarg << "\n";
   const size_t nvec = 1 + (ntarg-1)/VECREG_SIZE;
-  std::vector<native_simd<FLOAT>> x(nvec),y(nvec),s(nvec),r(nvec);
+  std::vector<native_simd<FLOAT>> x(nvec),y(nvec);
+  std::vector<native_simd<FLOAT>> s(nvec),r(nvec);
   std::vector<native_simd<FLOAT>> u(nvec),v(nvec);
   std::cout << "  vector length is " << x.size() << " entries\n";
 

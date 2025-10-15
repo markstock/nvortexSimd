@@ -2,7 +2,7 @@
  * nvortexSimd - test platform for SIMD-acceleration of an N-vortex solver
  *
  * Copyright (c) 2022 Mark J. Stock <markjstock@gmail.com>
-*/
+ */
 
 #include <iostream>
 #include <random>

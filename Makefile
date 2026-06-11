@@ -4,10 +4,12 @@ ifneq (, $(shell which CC 2>/dev/null))
   CXX=CC
 endif
 
-all : nvortex2d.bin nvortex3d.bin
+CXXFLAGS=-O3 -march=native -std=c++2b -fopenmp
 
-%.bin : %.cpp
-	$(CXX) -march=native -O2 -o $@ $< -fopenmp
+all: nvortex2d.bin nvortex3d.bin
 
-clean :
-	rm -f nvortex2d.bin nvortex3d.bin
+%.bin: %.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+clean:
+	rm -f *.bin

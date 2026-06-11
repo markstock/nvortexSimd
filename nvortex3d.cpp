@@ -1,7 +1,7 @@
 /*
  * nvortexSimd - test platform for SIMD-acceleration of an N-vortex solver
  *
- * Copyright (c) 2022 Mark J. Stock <markjstock@gmail.com>
+ * Copyright (c) 2022,6 Mark J. Stock <markjstock@gmail.com>
  */
 
 #include <iostream>
@@ -75,15 +75,21 @@ int main(int argc, char const *argv[]) {
     r[i][j] = (i*VECREG_SIZE+j < ntarg) ? thisrad*posdistro(generator) : 1.f;
   }
 
+  // create temporary r squared array
+  std::vector<native_simd<FLOAT>> r2(nvec);
+  for (size_t i=0; i<r.size(); ++i) {
+    r2[i] = r[i] * r[i];
+  }
+
   // do a smaller precursor calculation to warm things up
   std::vector<size_t> itargs = {{x.size()/2, x.size(), x.size()}};
 
   for (size_t thissize : itargs) {
-  std::cout << "run with " << VECREG_SIZE*thissize << " parts" << std::endl;
-  auto start = std::chrono::system_clock::now();
+  std::cout << "run with " << VECREG_SIZE*thissize << " target parts" << std::endl;
+  auto start = std::chrono::steady_clock::now();
 
   // loop over targets, one at a time
-  #pragma omp parallel for schedule(guided)
+  #pragma omp parallel for schedule(static)
   for (size_t i=0; i<thissize; ++i) {
   for (size_t ii=0; ii<std::min(VECREG_SIZE,ntarg-i*VECREG_SIZE); ++ii) {
     // same results as:
@@ -92,19 +98,22 @@ int main(int argc, char const *argv[]) {
     native_simd<FLOAT> usum = 0.f;
     native_simd<FLOAT> vsum = 0.f;
     native_simd<FLOAT> wsum = 0.f;
-    const native_simd<FLOAT> targrad = r[i][ii];
-    const native_simd<FLOAT> tr2 = targrad*targrad;
+    const native_simd<FLOAT> tx = x[i][ii];
+    const native_simd<FLOAT> ty = y[i][ii];
+    const native_simd<FLOAT> tz = z[i][ii];
+    const native_simd<FLOAT> tr2 = r2[i][ii];
 
     // loop over sources, vector at a time
     for (size_t j=0; j<x.size(); ++j) {
 
-      const native_simd<FLOAT> dx = x[i][ii] - x[j];
-      const native_simd<FLOAT> dy = y[i][ii] - y[j];
-      const native_simd<FLOAT> dz = z[i][ii] - z[j];
-      const native_simd<FLOAT> dist = dx*dx + dy*dy + dz*dz + r[j]*r[j] + tr2;
+      const native_simd<FLOAT> dx = tx - x[j];
+      const native_simd<FLOAT> dy = ty - y[j];
+      const native_simd<FLOAT> dz = tz - z[j];
+      const native_simd<FLOAT> dist = dx*dx + dy*dy + dz*dz + r2[j] + tr2;
 
       // correct kernel, with sqrt
-      const native_simd<FLOAT> fac = 1.f / (dist*sqrt(dist));
+      const native_simd<FLOAT> invDist = 1.f / sqrt(dist);
+      const native_simd<FLOAT> fac = invDist / dist;
       // must serialize these calcs
       //native_simd<FLOAT> fac;
       //for (size_t jj=0; jj<VECREG_SIZE; ++jj) {
@@ -126,15 +135,15 @@ int main(int argc, char const *argv[]) {
   }
   }
 
+  auto end = std::chrono::steady_clock::now();
+  const float sec = std::chrono::duration<double>(end - start).count();
+
   const float flops = (thissize*VECREG_SIZE)*(1+nvec*VECREG_SIZE*29);
   std::cout << "  performed " << flops << " flops\n";
 
-  auto end = std::chrono::system_clock::now();
-  auto elapsed = end - start;
-
   if (timeit) {
-    std::cout << "  work complete in " << (elapsed.count()/1.e+9) << " sec\n";
-    std::cout << "  performance is " << (flops / elapsed.count()) << " GF/s\n";
+    std::cout << "  work complete in " << sec << " sec\n";
+    std::cout << "  performance is " << (flops / sec) * 1e-9 << " GF/s\n";
   }
 
   } // end loop over runs
